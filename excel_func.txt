@@ -1,0 +1,28 @@
+
+FOR(counter_text, start_num, end_num, step_num)
+开始for循环
+
+FORMULA(text,reference)
+在指定位置按格式化输出。
+
+INDEX(array, row_num, [column_num])
+返回表元素或数组元素的值，该元素是通过行号和列号索引选定的。
+
+OFFSET(reference, rows, cols, [height], [width])
+返回对单元格或单元格区域中指定行数和列数的区域的引用。 返回的引用可以是单个单元格或单元格区域。 可以指定要返回的行数和列数。
+Rows 可为正数（这意味着在起始引用的下方）或负数（这意味着在起始引用的上方）。
+Cols 可为正数（这意味着在起始引用的右侧）或负数（这意味着在起始引用的左侧）。
+
+SET.NAME("name",x)
+为引用值定义一个别名。
+
+
+SELECTION()
+返回当前选中的表格区域或选中的对象
+
+SORT(orientation, key1, order1, type, custom)
+Orientation is a number specifying whether to sort by rows or columns. Enter 1 to sort top
+to bottom or 2 to sort left to right.
+key1 需排序的单元格
+Order1 specifies whether to sort the row or column containing key1 in ascending or
+descending order. Enter 1 to sort in ascending order or 2 to sort in descending order.
