@@ -2,7 +2,7 @@
 #   The pk_error_cn.py in pk_gui
 #   created by Jiang Feng(silencejiang@zju.edu.cn)
 #   created at 3:19 on 2023/1/7
-from pk.pk import PK
+from pk4adi.pk import PK
 class PkError:
     errors = {
         PK.ALL_CHECKS_OK : "输入数据格式检查无误！",
