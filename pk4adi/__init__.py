@@ -3,4 +3,6 @@
 #   created by Jiang Feng(silencejiang@zju.edu.cn)
 #   created at 21:08 on 2023/1/18
 
-__version__ = '0.0.1'
+from .pk import *
+from .pk_error_cn import *
+__version__ = '0.0.2'
