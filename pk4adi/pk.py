@@ -1,7 +1,15 @@
-#   -*- coding:utf-8 -*-
-#   The pk.py in pk
-#   created by Jiang Feng(silencejiang@zju.edu.cn)
-#   created at 15:41 on 2023/1/1
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+"""
+@File    :   pk.py
+@Contact :   Jiang Feng(silencejiang@zju.edu.cn)
+@License :   (C)Copyright 2004-2020, Zhejiang University
+
+@Modify Time        @Author       @Version    @Desciption
+------------        -------       --------    -----------
+2023/6/13 20:56   silencejiang      0.03         None
+"""
+
 import pandas as pd
 import numpy as np
 
@@ -263,6 +271,8 @@ class PK:
                 self.dict.update({'SPKm': self.dict.get('SPKm') + PKm})
                 self.dict.update({'SSPKm': self.dict.get('SSPKm') + PKm * PKm})
 
+            self.dict.update({'PKm':self.data['PKm']})
+
             self.dict.update({'PKj': self.n_case *
                               self.dict.get('PK') -
                               (self.n_case -
@@ -308,9 +318,9 @@ class PK:
 
 
 if __name__ == "__main__":
-    # x = [1,1,2,1,2,2,3,3]
-    # y = [1,1,2,1,2,2,3,3]
-    x = [0, 0, 0, 0, 0, 0]  # , 1, 1, 2]
-    y = [1, 1, 1, 1, 1, 2]  # , 3, 3, 4]
+
+    x = [ 0, 0, 0, 0, 0, 0]
+    y = [ 1, 1, 1, 1, 1, 2]
+
     pk = PK()
     pk.calculate_pk(x_in=x, y_in=y)
