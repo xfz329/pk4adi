@@ -4,10 +4,6 @@
 @File    :   pk.py
 @Contact :   Jiang Feng(silencejiang@zju.edu.cn)
 @License :   (C)Copyright 2004-2020, Zhejiang University
-
-@Modify Time        @Author       @Version    @Desciption
-------------        -------       --------    -----------
-2023/6/13 20:56   silencejiang      0.1.0         None
 """
 
 import math
@@ -312,5 +308,5 @@ if __name__ == "__main__":
 
     x = [0, 0, 0, 0, 0, 0, 1, 1, 2]
     y = [1, 1, 1, 1, 1, 2, 3, 3, 4]
-    ans = calculate_pk(x, y)
+    calculate_pk(x, y)
 

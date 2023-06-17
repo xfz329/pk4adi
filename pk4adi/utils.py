@@ -4,10 +4,6 @@
 @File    :   utils.py    
 @Contact :   Jiang Feng(silencejiang@zju.edu.cn)
 @License :   (C)Copyright 2004-2020, Zhejiang University
-
-@Modify Time        @Author       @Version    @Desciption
-------------        -------       --------    -----------
-2023/6/16 1:03   silencejiang      0.1.0         None
 """
 
 
