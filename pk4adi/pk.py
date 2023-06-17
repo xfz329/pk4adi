@@ -7,320 +7,310 @@
 
 @Modify Time        @Author       @Version    @Desciption
 ------------        -------       --------    -----------
-2023/6/13 20:56   silencejiang      0.03         None
+2023/6/13 20:56   silencejiang      0.1.0         None
 """
 
+import math
 import pandas as pd
 import numpy as np
+from pk4adi.utils import print_table
 
+__all__  = ["calculate_pk", "print_pk"]
 
-class PK:
-    ALL_CHECKS_OK = 0
-    ALL_CALCULATION_OK = 1
+def calculate_pk(x_in , y_in):
+    """
+    Compute the pk value to Measure the Performance of Anesthetic Depth Indicators.
+        print_pk() will be called before return the ans.
 
-    CHECK_CASE_ERROR_DATA_FRAME_COLUMNS = 10
-    CHECK_CASE_ERROR_XY_TYPE = 11
-    CHECK_CASE_ERROR_UNKNOWN_TYPE = 12
-    CHECK_CASE_ERROR_CONTAIN_NON_NUM = 13
-    CHECK_CASE_ERROR_CONTAIN_NON_NAN = 14
-    CHECK_CASE_ERROR_NUMS = 15
-    CHECK_Y_ERROR_CONTAIN_VALUES = 16
+    Parameters
+    ----------
+    x_in : a list or a pandas series (pandas.Series()).
+        Indicator.
+    y_in : a list or a pandas series (pandas.Series()).
+        State.
 
-    JACKKNIFE_WARN = 20
+    Returns
+    -------
+    ans : a dict.
+        A dict containing all the matrix and variables involved in.
+        Use to script 'print(ans.keys())' to get the details.
+        The most important variables all already been printed.
 
-    def __init__(self):
-        self.data = None
-        self.n_case = 0
-        self.rows = 1
-        self.cols = 1
-        self.jack_ok = True
-        self.A = None
-        self.S = None
-        self.C = None
-        self.D = None
-        self.T = None
-        self.SA = None
-        self.CA = None
-        self.DA = None
-        self.TA = None
-        self.dict = {}
+    References
+    ----------
+    To be added.
 
-    def calculate_pk(self, *, x_in=None, y_in=None, dataframe=None):
-        state = self.check_case(x_in=x_in, y_in=y_in, dataframe=dataframe)
-        if state != PK.ALL_CHECKS_OK:
-            return state
-        state = self.check_y()
-        if state != PK.ALL_CHECKS_OK:
-            return state
-        self.check_x()
-        self.construct_A()
-        self.construct_S()
-        self.construct_CDT()
-        state = self.calculate()
-        self.show_result()
-        return state
+    Notes
+    -----
+    To be added.
 
-    def check_case(self, *, x_in=None, y_in=None, dataframe=None):
-        x = None
-        y = None
-        if dataframe is not None and isinstance(dataframe, pd.DataFrame):
-            if len(dataframe.columns) < 2:
-                return PK.CHECK_CASE_ERROR_DATA_FRAME_COLUMNS
-            contain_xy = 0
-            if 'x' in dataframe.columns:
-                x = dataframe['x']
-                contain_xy = contain_xy & 1
-            if 'X' in dataframe.columns:
-                x = dataframe['X']
-                contain_xy = contain_xy & 1
-            if 'y' in dataframe.columns:
-                y = dataframe['y']
-                contain_xy = contain_xy & 2
-            if 'Y' in dataframe.columns:
-                y = dataframe['Y']
-                contain_xy = contain_xy & 2
-            if contain_xy != 3:
-                x = dataframe.iloc[:, 0]
-                y = dataframe.iloc[:, 1]
-        elif x_in is not None and y_in is not None:
-            if isinstance(x_in, list) and isinstance(y_in, list):
-                x = pd.Series(x_in)
-                y = pd.Series(y_in)
-            elif isinstance(x_in, pd.Series) and isinstance(y_in, pd.Series):
-                x = x_in
-                y = y_in
-            else:
-                return PK.CHECK_CASE_ERROR_XY_TYPE
+    """
+
+    ans = {}
+    ans.update({"type" : "pk"})
+    x = x_in
+    y = y_in
+
+    # check the input type of x and y.
+    assert isinstance(x, list) or isinstance(x, pd.Series) , "x should be a list or pandas.Series."
+    assert isinstance(y, list) or isinstance(y, pd.Series) ,  "y should be a list or pandas.Series."
+
+    # convert the list to pandas.Series if needed.
+    if isinstance(x_in, list):
+        x = pd.Series(x_in)
+    if isinstance(y_in, list):
+        y = pd.Series(y_in)
+
+    assert not x.apply(lambda n: not isinstance(n, (int, float))).any() , "x should not contain any non-num."
+    assert not y.apply(lambda n: not isinstance(n, (int, float))).any(), "y should not contain any non-num."
+    assert not x.isna().any() , "x should not contain any nan."
+    assert not y.isna().any(), "y should not contain any nan."
+    assert len(x) == len(y) , "x and y should contain the same cases."
+    assert len(x) >= 2 , "x and y should contain at least two cases."
+
+    # get n_cases.
+    n_case = len(x)
+
+    # construct basic matrix.
+    data = pd.DataFrame({"x": x, "y": y, "k": range(n_case), "Ry": [0] * n_case,"Cx": [0] * n_case, "PKm": [0] * n_case})
+
+    # check y and set the category.
+    data.sort_values("y", inplace=True)
+    current = data.iloc[0, 1]
+    category = 0
+    for i in range(n_case):
+        if current == data.iloc[i, 1]:
+            data.iloc[i, 3] = category
         else:
-            return PK.CHECK_CASE_ERROR_UNKNOWN_TYPE
+            current = data.iloc[i, 1]
+            category += 1
+            data.iloc[i, 3] = category
 
-        if x.apply(lambda n: not isinstance(n, (int, float))).any() or y.apply(
-                lambda n: not isinstance(n, (int, float))).any():
-            return PK.CHECK_CASE_ERROR_CONTAIN_NON_NUM
-        if x.isna().any() or y.isna().any():
-            return PK.CHECK_CASE_ERROR_CONTAIN_NON_NAN
+    # whether jackknife could be done or not.
+    y_category = data.iloc[:, 1].tolist()
+    jack_ok = True
+    for i in set(y_category):
+        if y_category.count(i) < 2:
+            jack_ok = False
 
-        l1 = len(x)
-        l2 = len(y)
-        if l1 != l2 or l1 < 2:
-            print("Not enough cases (rows) selected; need at least two.")
-            return PK.CHECK_CASE_ERROR_NUMS
-        self.n_case = l1
-        self.data = pd.DataFrame({'x': x, 'y': y, 'k': range(self.n_case), 'Ry': [
-            0] * self.n_case,
-            'Cx': [0] * self.n_case, 'PKm': [0] * self.n_case})
-        return PK.ALL_CHECKS_OK
+    # get the row num for the matrix.
+    rows = len(set(y_category))
+    assert rows >= 2 , "The distinct values of y should be at least two."
+    if rows > 2:
+        jack_ok = True
 
-    def check_y(self):
-        self.data.sort_values('y', inplace=True)
-        current = self.data.iloc[0, 1]
-        category = 0
-        for i in range(self.n_case):
-            if current == self.data.iloc[i, 1]:
-                self.data.iloc[i, 3] = category
-            else:
-                current = self.data.iloc[i, 1]
-                category += 1
-                self.data.iloc[i, 3] = category
-
-        y = self.data.iloc[:, 1].tolist()
-        self.jack_ok = True
-        for i in set(y):
-            if y.count(i) < 2:
-                self.jack_ok = False
-
-        self.rows = len(set(y))
-        print("There are %d distinct y-values." % self.rows)
-        if self.rows < 2:
-            print("Only one distinct y-value; need at least two.")
-            return PK.CHECK_Y_ERROR_CONTAIN_VALUES
-        if self.rows > 2:
-            self.jack_ok = True
-        return PK.ALL_CHECKS_OK
-
-    def check_x(self):
-        self.data.sort_values('x', inplace=True)
-        current = self.data.iloc[0, 0]
-        category = 0
-        for i in range(self.n_case):
-            if current == self.data.iloc[i, 0]:
-                self.data.iloc[i, 4] = category
-            else:
-                current = self.data.iloc[i, 0]
-                category += 1
-                self.data.iloc[i, 4] = category
-
-        x = self.data.iloc[:, 0].tolist()
-        self.cols = len(set(x))
-        self.data.sort_values('k', inplace=True)
-
-    def construct_A(self):
-        self.A = np.zeros((self.rows, self.cols), dtype=int)
-        for k in range(self.n_case):
-            i = self.data.iloc[k, 3]
-            j = self.data.iloc[k, 4]
-            self.A[i, j] = self.A[i, j] + 1
-
-    def construct_S(self):
-        self.S = np.zeros((self.rows, self.cols), dtype=int)
-        for i in range(self.rows):
-            self.S[i, 0] = self.A[i, 0]
-            for j in range(1, self.cols):
-                self.S[i, j] = self.S[i, j - 1] + self.A[i, j]
-
-    def construct_CDT(self):
-        self.C = np.zeros((self.rows, self.cols), dtype=int)
-        self.D = np.zeros((self.rows, self.cols), dtype=int)
-        self.T = np.zeros((self.rows, self.cols), dtype=int)
-        self.SA = np.zeros((self.rows, 2), dtype=int)
-        self.CA = np.zeros((self.rows, 2), dtype=int)
-        self.DA = np.zeros((self.rows, 2), dtype=int)
-        self.TA = np.zeros((self.rows, 2), dtype=int)
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if self.A[i, j] != 0:
-                    for ai in range(self.rows):
-                        if ai < i:
-                            if j > 0:
-                                self.C[i, j] = self.C[i, j] + self.S[ai, j - 1]
-                            if j < self.cols - 1:
-                                self.D[i, j] = self.D[i, j] + \
-                                    self.S[ai, self.cols - 1] - self.S[ai, j]
-                            self.T[i, j] = self.T[i, j] + self.A[ai, j]
-                        elif ai > i:
-                            if j < self.cols - 1:
-                                self.C[i, j] = self.C[i, j] + \
-                                    self.S[ai, self.cols - 1] - self.S[ai, j]
-                            if j > 0:
-                                self.D[i, j] = self.D[i, j] + self.S[ai, j - 1]
-                            self.T[i, j] = self.T[i, j] + self.A[ai, j]
-                    self.CA[i, 0] = self.CA[i, 0] + self.A[i, j] * self.C[i, j]
-                    self.DA[i, 0] = self.DA[i, 0] + self.A[i, j] * self.D[i, j]
-                    self.TA[i, 0] = self.TA[i, 0] + self.A[i, j] * self.T[i, j]
-                    self.CA[1, 1] = self.CA[1, 1] + \
-                        self.A[i, j] * self.C[i, j] * self.C[i, j]
-                    self.DA[1, 1] = self.DA[1, 1] + \
-                        self.A[i, j] * self.D[i, j] * self.D[i, j]
-                    self.TA[1, 1] = self.TA[1, 1] + \
-                        self.A[i, j] * self.C[i, j] * self.D[i, j]
-                else:
-                    pass
-            self.SA[0, 0] = self.SA[0, 0] + self.S[i, self.cols - 1]
-            self.CA[0, 1] = self.CA[0, 1] + self.CA[i, 0]
-            self.DA[0, 1] = self.DA[0, 1] + self.DA[i, 0]
-            self.TA[0, 1] = self.TA[0, 1] + self.TA[i, 0]
-
-    def calculate(self):
-        self.dict.update({'n': self.SA[0, 0]})
-        self.dict.update({'Qc': self.CA[0, 1]})
-        self.dict.update({'Qd': self.DA[0, 1]})
-        self.dict.update({'Qtx': self.TA[0, 1]})
-        self.dict.update({'Qcdt': self.dict.get('Qc') +
-                         self.dict.get('Qd') + self.dict.get('Qtx')})
-        self.dict.update(
-            {'dyx': (self.dict.get('Qc') - self.dict.get('Qd')) / self.dict.get('Qcdt')})
-        self.dict.update({'PK': (self.dict.get('dyx') + 1) / 2})
-
-        self.dict.update({'Qcc': self.CA[1, 1]})
-        self.dict.update({'Qdd': self.DA[1, 1]})
-        self.dict.update({'Qcd': self.TA[1, 1]})
-        self.dict.update({'Term1': self.dict.get('Qcc') - 2 *
-                         self.dict.get('Qcd') + self.dict.get('Qdd')})
-        self.dict.update({'Term2': 0})
-        self.dict.update({'Term3': 0})
-
-        for i in range(self.rows):
-            ni = self.S[i, self.cols - 1]
-            Qci = self.CA[i, 0]
-            Qdi = self.DA[i, 0]
-            self.dict.update({'Term2': self.dict.get(
-                'Term2') + (self.dict.get('n') - ni) * (Qci - Qdi)})
-            self.dict.update({'Term3': self.dict.get(
-                'Term3') + ni * (self.dict.get('n') - ni) * (self.dict.get('n') - ni)})
-        self.dict.update(
-            {'Term2': -2 * self.dict.get('dyx') * self.dict.get('Term2')})
-        self.dict.update({'Term3': self.dict.get('dyx') *
-                         self.dict.get('dyx') * self.dict.get('Term3')})
-
-        import math
-        self.dict.update({'SE1': math.sqrt(self.dict.get(
-            'Term1') + self.dict.get('Term2') + self.dict.get('Term3')) / self.dict.get('Qcdt')})
-        self.dict.update({'SE0': math.sqrt(self.dict.get('Term1') - (self.dict.get('Qc') - self.dict.get('Qd'))
-                         * (self.dict.get('Qc') - self.dict.get('Qd')) / self.dict.get('n')) / self.dict.get('Qcdt')})
-
-        if not self.jack_ok:
-            print(
-                "Can't do jackknife; for two-level y; need at least two cases for each level.")
-            return PK.JACKKNIFE_WARN
+    # check x  and set the category.
+    data.sort_values("x", inplace=True)
+    current = data.iloc[0, 0]
+    category = 0
+    for i in range(n_case):
+        if current == data.iloc[i, 0]:
+            data.iloc[i, 4] = category
         else:
-            self.dict.update({'SPKm': 0})
-            self.dict.update({'SSPKm': 0})
+            current = data.iloc[i, 0]
+            category += 1
+            data.iloc[i, 4] = category
 
-            for k in range(self.n_case):
-                i = self.data.iloc[k, 3]
-                j = self.data.iloc[k, 4]
-                Crc = self.C[i, j]
-                Drc = self.D[i, j]
-                Trc = self.T[i, j]
-                Qcm = self.dict.get('Qc') - 2 * Crc
-                Qdm = self.dict.get('Qd') - 2 * Drc
-                Qtxm = self.dict.get('Qtx') - 2 * Trc
-                Qcdtm = Qcm + Qdm + Qtxm
-                PKm = (Qcm + Qtxm / 2) / Qcdtm
-                self.data.iloc[k, 5] = PKm
-                self.dict.update({'SPKm': self.dict.get('SPKm') + PKm})
-                self.dict.update({'SSPKm': self.dict.get('SSPKm') + PKm * PKm})
+    # get the col num for the matrix
+    x_category = data.iloc[:, 0].tolist()
+    cols = len(set(x_category))
 
-            self.dict.update({'PKm':self.data['PKm']})
+    # restore data by the index k.
+    data.sort_values("k", inplace=True)
 
-            self.dict.update({'PKj': self.n_case *
-                              self.dict.get('PK') -
-                              (self.n_case -
-                               1) *
-                              (self.dict.get('SPKm')) /
-                              self.n_case})
-            self.dict.update({'SEj': math.sqrt((self.n_case - 1) * (self.dict.get('SSPKm') -
-                             self.dict.get('SPKm') * self.dict.get('SPKm') / self.n_case) / self.n_case)})
-        return PK.ALL_CALCULATION_OK
+    # construct matrix A.
+    A = np.zeros((rows, cols), dtype=int)
+    for k in range(n_case):
+        i = data.iloc[k, 3]
+        j = data.iloc[k, 4]
+        A[i, j] = A[i, j] + 1
 
-    def show_result(self):
-        print("The result is as following :")
-        print("PK is %.3f" % self.dict.get("PK"))
-        print("SE0 is %.3f" % self.dict.get("SE0"))
-        print("SE1 is %.3f" % self.dict.get("SE1"))
-        if self.jack_ok:
-            print("PKj is %.3f" % self.dict.get("PKj"))
-            print("SEj is %.3f" % self.dict.get("SEj"))
-            self.data['PKm'] = self.data['PKm'].map(lambda x: format(x, '.3f'))
-        else:
-            self.data.drop(labels="PKm", axis=1, inplace=True)
-        print("All the data matrix :")
-        print("Original")
-        print(self.data)
-        print("Aij")
-        print(self.A)
-        print("Sij")
-        print(self.S)
-        print("Sij Assist")
-        print(self.SA)
-        print("Cij")
-        print(self.C)
-        print("Cij Assist")
-        print(self.CA)
-        print("Dij")
-        print(self.D)
-        print("Dij Assist")
-        print(self.DA)
-        print("Tij")
-        print(self.T)
-        print("Tij Assist")
-        print(self.TA)
+    # construct matrix S.
+    S = np.zeros((rows, cols), dtype=int)
+    for i in range(rows):
+        S[i, 0] = A[i, 0]
+        for j in range(1, cols):
+            S[i, j] = S[i, j - 1] + A[i, j]
+
+    # construct matrix C, D and T with the help of the assist matrix SA, CA, DA and TA.
+    C = np.zeros((rows, cols), dtype=int)
+    D = np.zeros((rows, cols), dtype=int)
+    T = np.zeros((rows, cols), dtype=int)
+    SA = np.zeros((rows, 2), dtype=int)
+    CA = np.zeros((rows, 2), dtype=int)
+    DA = np.zeros((rows, 2), dtype=int)
+    TA = np.zeros((rows, 2), dtype=int)
+    for i in range(rows):
+        for j in range(cols):
+            if A[i, j] != 0:
+                for ai in range(rows):
+                    if ai < i:
+                        if j > 0:
+                            C[i, j] = C[i, j] + S[ai, j - 1]
+                        if j < cols - 1:
+                            D[i, j] = D[i, j] + S[ai, cols - 1] - S[ai, j]
+                        T[i, j] = T[i, j] + A[ai, j]
+                    elif ai > i:
+                        if j < cols - 1:
+                            C[i, j] = C[i, j] + S[ai, cols - 1] - S[ai, j]
+                        if j > 0:
+                            D[i, j] = D[i, j] + S[ai, j - 1]
+                        T[i, j] = T[i, j] + A[ai, j]
+                CA[i, 0] = CA[i, 0] + A[i, j] * C[i, j]
+                DA[i, 0] = DA[i, 0] + A[i, j] * D[i, j]
+                TA[i, 0] = TA[i, 0] + A[i, j] * T[i, j]
+                CA[1, 1] = CA[1, 1] + A[i, j] * C[i, j] * C[i, j]
+                DA[1, 1] = DA[1, 1] + A[i, j] * D[i, j] * D[i, j]
+                TA[1, 1] = TA[1, 1] + A[i, j] * C[i, j] * D[i, j]
+            else:
+                pass
+        SA[0, 0] = SA[0, 0] + S[i, cols - 1]
+        CA[0, 1] = CA[0, 1] + CA[i, 0]
+        DA[0, 1] = DA[0, 1] + DA[i, 0]
+        TA[0, 1] = TA[0, 1] + TA[i, 0]
+
+    # calculate.
+    n = SA[0, 0]
+    Qc = CA[0, 1]
+    Qd = DA[0, 1]
+    Qtx = TA[0, 1]
+    Qcdt = Qc + Qd + Qtx
+    dyx = (Qc - Qd) / Qcdt
+    PK = (dyx + 1) / 2
+    Qcc = CA[1, 1]
+    Qdd = DA[1, 1]
+    Qcd = TA[1, 1]
+    Term1 = Qcc - 2 * Qcd + Qdd
+    Term2 = 0
+    Term3 = 0
+
+    for i in range(rows):
+        ni = S[i, cols - 1]
+        Qci = CA[i, 0]
+        Qdi = DA[i, 0]
+        Term2 = Term2 + (n - ni) * (Qci - Qdi)
+        Term3 = Term3 + ni * (n - ni) * (n - ni)
+
+    Term2 = -2 * dyx * Term2
+    Term3 = dyx * dyx * Term3
+    SE1 = math.sqrt(Term1 + Term2 + Term3) / Qcdt
+    SE0 = math.sqrt(Term1 - (Qc - Qd) * (Qc - Qd) / n) / Qcdt
+
+
+    SPKm = np.nan
+    SSPKm = np.nan
+    PKj = np.nan
+    SEj = np.nan
+
+    # do jackknife.
+    if jack_ok:
+        SPKm = 0
+        SSPKm = 0
+
+        for k in range(n_case):
+            i = data.iloc[k, 3]
+            j = data.iloc[k, 4]
+            Crc = C[i, j]
+            Drc = D[i, j]
+            Trc = T[i, j]
+            Qcm = Qc - 2 * Crc
+            Qdm = Qd - 2 * Drc
+            Qtxm = Qtx - 2 * Trc
+            Qcdtm = Qcm + Qdm + Qtxm
+            PKm = (Qcm + Qtxm / 2) / Qcdtm
+            data.iloc[k, 5] = PKm
+            SPKm = SPKm + PKm
+            SSPKm = SSPKm + PKm * PKm
+
+        PKj = n_case * PK -(n_case - 1) * SPKm / n_case
+        SEj = math.sqrt((n_case - 1) * (SSPKm - SPKm * SPKm / n_case) / n_case)
+
+
+    # save the matrix.
+    ans.update({"A" : A})
+    ans.update({"S" : S})
+    ans.update({"C" : C})
+    ans.update({"D" : D})
+    ans.update({"T" : T})
+    ans.update({"SA" : SA})
+    ans.update({"CA" : CA})
+    ans.update({"DA" : DA})
+    ans.update({"TA" : TA})
+
+    # save the variables.
+    ans.update({"jack_ok" : jack_ok})
+    ans.update({"n_case": n_case})
+    ans.update({"n" : n})
+    ans.update({"Qc" : Qc})
+    ans.update({"Qd" : Qd})
+    ans.update({"Qtx" : Qtx})
+    ans.update({"Qcdt" : Qcdt})
+    ans.update({"dyx" : dyx})
+    ans.update({"PK" : PK})
+    ans.update({"Qcc" : Qcc})
+    ans.update({"Qdd" : Qdd})
+    ans.update({"Qcd" : Qcd})
+    ans.update({"Term1" : Term1})
+    ans.update({"Term2" : Term2})
+    ans.update({"Term3" : Term3})
+    ans.update({"SE1" : SE1})
+    ans.update({"SE0" : SE0})
+    ans.update({"PKm" : data["PKm"]})
+    ans.update({"SPKm" : SPKm})
+    ans.update({"SSPKm" : SSPKm})
+    ans.update({"PKj" : PKj})
+    ans.update({"SEj" : SEj})
+
+    # format and print.
+    print_pk(ans)
+
+    # return the ans.
+    return ans
+
+def print_pk(result, floatfmt=".3f", tablefmt='simple'):
+    """
+    Pretty display of a pk calculation result.
+
+    Parameters
+    ----------
+    result : a dict.
+        Must be the return value of function calculate_pk().
+    floatfmt : string.
+        Decimal number formatting.
+    tablefmt : string.
+        Table format (e.g. 'simple', 'plain', 'html', 'latex', 'grid', 'rst').
+        For a full list of available formats, please refer to
+        https://pypi.org/project/tabulate/
+
+    Returns
+    -------
+    Nothing will be returned.
+
+    Notes
+    -----
+    To be added.
+
+    """
+
+    if isinstance(result, dict) and result.get("type","unkonwn") == "pk":
+        df = pd.DataFrame({"PK": result.get("PK"),
+                            'SE0': result.get("SE0"),
+                            'SE1': result.get("SE1"),
+                            'jack_ok': result.get("jack_ok"),
+                            "PKj": result.get("PKj"),
+                            'SEj': result.get("SEj")},
+                            index=[0])
+        print('==============\nPK calculation\n==============\n')
+        print_table(df, floatfmt, tablefmt)
 
 
 if __name__ == "__main__":
 
     x = [ 0, 0, 0, 0, 0, 0]
     y = [ 1, 1, 1, 1, 1, 2]
+    calculate_pk(x, y)
 
-    pk = PK()
-    pk.calculate_pk(x_in=x, y_in=y)
+    x = [0, 0, 0, 0, 0, 0, 1, 1, 2]
+    y = [1, 1, 1, 1, 1, 2, 3, 3, 4]
+    ans = calculate_pk(x, y)
+

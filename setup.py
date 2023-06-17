@@ -1,7 +1,14 @@
-#   -*- coding:utf-8 -*-
-#   The setup.py in pk
-#   created by Jiang Feng(silencejiang@zju.edu.cn)
-#   created at 20:52 on 2023/1/18
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+"""
+@File    :   setup.py
+@Contact :   Jiang Feng(silencejiang@zju.edu.cn)
+@License :   (C)Copyright 2004-2020, Zhejiang University
+
+@Modify Time        @Author       @Version    @Desciption
+------------        -------       --------    -----------
+2023/6/13 16:20   silencejiang      0.1.0         None
+"""
 
 
 import os
@@ -18,8 +25,7 @@ __version__ = re.sub(
 )
 version_file.close()
 
-short_description = """Using PK to Measure the Performance of Anesthetic Depth
- Indicators."""
+short_description = """Using PK to Measure the Performance of Anesthetic Depth Indicators."""
 
 try:
     long_description = open('README.md', encoding="utf-8").read(),
@@ -30,7 +36,9 @@ except IOError:
 def get_install_requires():
     reqs = [
         'pandas>=0.18.0',
-        'numpy>=1.9.2'
+        'numpy>=1.21.6',
+        'scipy>=1.9.0',
+        'tabulate'
     ]
     return reqs
 
@@ -49,7 +57,7 @@ setup(
     packages=find_packages(),
     license='MIT License',
     classifiers=[
-         'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
@@ -57,5 +65,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     package_data={'': ['*.csv', '*.txt', '.toml']},
-    include_package_data=True  # 也选上
+    include_package_data=True
 )
