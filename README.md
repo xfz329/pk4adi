@@ -4,7 +4,7 @@
 
 The package's name pk4adi is short for "PK for anesthetic depth indicators". The PK (Prediction probability) was firstly proposed by [Docor Warren D. Smith](https://www.csus.edu/faculty/s/smithwd/) in the paper [Measuring the Performance of Anesthetic Depth Indicators](https://pubs.asahq.org/anesthesiology/article/84/1/38/35261/Measuring-the-Performance-of-Anesthetic-Depth) in 1996. Docor Warren D. Smith and his team provide a tool to calculate PK writen using the xls macro language.
 
-Our team provide a reimplementation of the PK tools developed using the Python language with easy using apis in this package. The project is fully open source in the [github](https://github.com/xfz329/pk). The lastest version 0.1.0 released on June 17, 2023. 
+Our team provide a reimplementation of the PK tools developed using the Python language with easy using apis in this package. The project is fully open source in the [github](https://github.com/xfz329/pk). The lastest version released could be found [here](https://github.com/xfz329/pk/releases). 
 
 Please feel free to contact us(silencejiang@zju.edu.cn). Any kind of feedbacks is welcomed. You could report any bugs or issues when using pk4adi in the github [project](https://github.com/xfz329/pk/issues).
 
@@ -137,9 +137,11 @@ from pk4adi.pk import calculate_pk
 
 x = [ 0, 0, 0, 0, 0, 0]
 y = [ 1, 1, 1, 1, 1, 2]
+calculate_pk(x, y)
 
-pk = PK()
-pk.calculate_pk(x_in=x, y_in=y)
+x = [0, 0, 0, 0, 0, 0, 1, 1, 2]
+y = [1, 1, 1, 1, 1, 2, 3, 3, 4]
+calculate_pk(x, y)
 ```
 You will get the following output.
 ```
@@ -220,6 +222,19 @@ For Pair (t-test)
 ------  ------  ----  -----  ---------  ---------
  0.030   0.066    23  0.453      0.327  P > 0.05
 ```
+
+### 3. more details
+You could get the all the matrix and variables in the returned dicts of the function calculate_pk() and compare_pks().
+```python
+print(pk1.keys())
+print(ans.keys())
+```
+You will get the following output.
+```
+dict_keys(['type', 'A', 'S', 'C', 'D', 'T', 'SA', 'CA', 'DA', 'TA', 'jack_ok', 'n_case', 'n', 'Qc', 'Qd', 'Qtx', 'Qcdt', 'dyx', 'PK', 'Qcc', 'Qdd', 'Qcd', 'Term1', 'Term2', 'Term3', 'SE1', 'SE0', 'PKm', 'SPKm', 'SSPKm', 'PKj', 'SEj'])
+dict_keys(['type', 'n_case', 'PKD', 'SED', 'ZD', 'ZP', 'ZJ', 'PKmD', 'SumD', 'SSD', 'DF', 'PKDJ', 'SEDJ', 'TD', 'TP', 'TJ'])
+```
+Then just get the value with the key of the dict!
 
 # Development
 
