@@ -14,10 +14,10 @@ from pk4adi.pk import calculate_pk
 
 __all__  = ["compare_pks", "print_pks"]
 
-def compare_pks(pk1, pk2):
+def compare_pks(pk1, pk2, auto_print = True):
     """
     Compare two answers of the pk values, which is the output of the function calculate_pk().
-        print_pks() will be called before return the ans.
+        print_pks() will be called before return the ans by default.
 
     Parameters
     ----------
@@ -25,6 +25,8 @@ def compare_pks(pk1, pk2):
         The output of the function calculate_pk().
     pk2 : a dict.
         The output of the function calculate_pk().
+    auto_print : bool.
+        Whether print the ans before returning the ans or not.
 
     Returns
     -------
@@ -96,7 +98,8 @@ def compare_pks(pk1, pk2):
     ans.update({"TJ": TJ})
 
     # format and print.
-    print_pks(ans)
+    if auto_print:
+        print_pks(ans)
 
     # return the ans.
     return ans
@@ -266,14 +269,13 @@ if __name__ == "__main__":
     x1 = [ 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6 ]
     y1 = [ 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3 ]
 
-    pk1 = calculate_pk(x_in = x1, y_in = y1)
+    pk1 = calculate_pk(x_in = x1, y_in = y1 , auto_print = False)
 
     x2 = [ 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6 ]
     y2 = [ 1, 1, 2, 1, 1, 2, 1, 2, 3, 3, 2, 2, 1, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3, 2 ]
 
-    pk2 = calculate_pk(x_in = x2, y_in = y2)
+    pk2 = calculate_pk(x_in = x2, y_in = y2 , auto_print = False)
 
     ans = compare_pks(pk1, pk2)
-    print_pks(ans)
 
 

@@ -13,10 +13,10 @@ from pk4adi.utils import print_table
 
 __all__  = ["calculate_pk", "print_pk"]
 
-def calculate_pk(x_in , y_in):
+def calculate_pk(x_in , y_in, auto_print = True):
     """
     Compute the pk value to Measure the Performance of Anesthetic Depth Indicators.
-        print_pk() will be called before return the ans.
+        print_pk() will be called before return the ans by default.
 
     Parameters
     ----------
@@ -24,6 +24,8 @@ def calculate_pk(x_in , y_in):
         Indicator.
     y_in : a list or a pandas series (pandas.Series()).
         State.
+    auto_print : bool.
+        Whether print the ans before returning the ans or not.
 
     Returns
     -------
@@ -258,7 +260,8 @@ def calculate_pk(x_in , y_in):
     ans.update({"SEj" : SEj})
 
     # format and print.
-    print_pk(ans)
+    if auto_print:
+        print_pk(ans)
 
     # return the ans.
     return ans
@@ -304,7 +307,7 @@ if __name__ == "__main__":
 
     x = [ 0, 0, 0, 0, 0, 0]
     y = [ 1, 1, 1, 1, 1, 2]
-    calculate_pk(x, y)
+    calculate_pk(x, y , False)
 
     x = [0, 0, 0, 0, 0, 0, 1, 1, 2]
     y = [1, 1, 1, 1, 1, 2, 3, 3, 4]

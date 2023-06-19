@@ -1,4 +1,8 @@
 # Change logs
+## 0.1.2
+Minor update.
+* Add auto_print control.
+* Fix documentation.
 ## 0.1.1
 Minor update.
 * Fix documentation errors.

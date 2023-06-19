@@ -44,7 +44,7 @@ setup(
     version=__version__,
     author="silencejiang",
     author_email="silencejiang@zju.edu.cn",
-    url='https://github.com/xfz329/pk.git',
+    url='https://github.com/xfz329/pk4adi.git',
     description=short_description,
     long_description_content_type="text/markdown",
     long_description=long_description,
