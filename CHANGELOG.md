@@ -1,11 +1,18 @@
 # Change logs
+## 0.1.3
+Minor update.
+* Fix bug.
+* Fix documentation.
+
 ## 0.1.2
 Minor update.
 * Add auto_print control.
 * Fix documentation.
+
 ## 0.1.1
 Minor update.
 * Fix documentation errors.
+
 ## 0.1.0
 Major update.
 * The first stable version of pk4adi.

@@ -16,7 +16,7 @@ __all__  = ["calculate_pk", "print_pk"]
 def calculate_pk(x_in , y_in, auto_print = True):
     """
     Compute the pk value to Measure the Performance of Anesthetic Depth Indicators.
-        print_pk() will be called before return the ans by default.
+        print_pk() will be called before returning ans by default.
 
     Parameters
     ----------
@@ -25,14 +25,14 @@ def calculate_pk(x_in , y_in, auto_print = True):
     y_in : a list or a pandas series (pandas.Series()).
         State.
     auto_print : bool.
-        Whether print the ans before returning the ans or not.
+        Whether to print the ans before returning it or not.
 
     Returns
     -------
     ans : a dict.
-        A dict containing all the matrix and variables involved in.
-        Use to script 'print(ans.keys())' to get the details.
-        The most important variables all already been printed.
+        A dict containing all the matrix and variables involved.
+        Use the script 'print(ans.keys())' to get the details.
+        The most important variables have already been printed.
 
     References
     ----------

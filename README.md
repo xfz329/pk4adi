@@ -2,13 +2,13 @@
 
 ## Project Information
 
-The package's name pk4adi is short for "PK for anesthetic depth indicators". The PK (Prediction probability) was firstly proposed by [Docor Warren D. Smith](https://www.csus.edu/faculty/s/smithwd/) in the paper [Measuring the Performance of Anesthetic Depth Indicators](https://pubs.asahq.org/anesthesiology/article/84/1/38/35261/Measuring-the-Performance-of-Anesthetic-Depth) in 1996. Docor Warren D. Smith and his team provide a tool to calculate PK writen using the excel macro language.
+The package's name pk4adi is short for "PK for anesthetic depth indicators". The PK (Prediction probability) was first proposed by [Dr. Warren D. Smith](https://www.csus.edu/faculty/s/smithwd/) in the paper [Measuring the Performance of Anesthetic Depth Indicators](https://pubs.asahq.org/anesthesiology/article/84/1/38/35261/Measuring-the-Performance-of-Anesthetic-Depth) in 1996. Dr. Warren D. Smith and his team provide a tool to calculate PK written using the MS Excel macro language.
 
-Our team provide a reimplementation of the PK tools developed using the Python language with easy using apis in this package. The project is fully open source in the [github](https://github.com/xfz329/pk4adi). The lastest version released could be found [here](https://github.com/xfz329/pk4adi/releases). 
+Our team provide a reimplementation of the PK tools developed using the Python language with easy-to-use APIs in this package. The project is fully open source on [github](https://github.com/xfz329/pk4adi). The latest released version could be found [here](https://github.com/xfz329/pk4adi/releases). 
 
-Moreover, a gui version of pk4adi is under development, which is names [pk4adi_gui](https://github.com/xfz329/pk4adi_gui) actually. This project is also open source in the github.
+A GUI version of pk4adi called pk4adi_gui is also under development. This project is also open source on [github](https://github.com/xfz329/pk4adi_gui).
 
-Please feel free to contact us(silencejiang@zju.edu.cn). Any kind of feedback is welcomed. You could report any bugs or issues when using pk4adi in the github [project](https://github.com/xfz329/pk4adi/issues).
+Please feel free to contact us (silencejiang@zju.edu.cn). Any kind of feedback is welcome. You could report any bugs or issues when using pk4adi on github [project](https://github.com/xfz329/pk4adi/issues).
 
 ## Changelogs
 
@@ -45,7 +45,7 @@ pip install pk4adi
 calculate_pk(x_in , y_in , auto_print = True):
 
 Compute the pk value to Measure the Performance of Anesthetic Depth Indicators.
-print_pk() will be called before return the ans by default.
+print_pk() will be called before returning ans by default.
 
 Parameters
 ----------
@@ -54,14 +54,14 @@ x_in : a list or a pandas series (pandas.Series()).
 y_in : a list or a pandas series (pandas.Series()).
     State.
 auto_print : bool.
-    Whether print the ans before returning the ans or not.
+    Whether to print the ans before returning it or not.
 
 Returns
 -------
 ans : a dict.
-    A dict containing all the matrix and variables involved in.
-    Use to script 'print(ans.keys())' to get the details.
-    The most important variables all already been printed.
+    A dict containing all the matrix and variables involved.
+    Use the script 'print(ans.keys())' to get the details.
+    The most important variables have already been printed.
 ```
 2. print_pk of module pk.py.
 ```
@@ -90,7 +90,7 @@ Nothing will be returned.
 compare_pks(pk1, pk2 , auto_print = True):
 
 Compare two answers of the pk values, which is the output of the function calculate_pk().
-print_pks() will be called before return the ans by default.
+print_pks() will be called before returning ans by default.
 
 Parameters
 ----------
@@ -99,14 +99,16 @@ pk1 : a dict.
 pk2 : a dict.
     The output of the function calculate_pk().
 auto_print : bool.
-    Whether print the ans before returning the ans or not.
+    Whether to print the ans before returning it or not.
 
 Returns
 -------
 ans : a dict.
-    A dict containing all the matrix and variables involved in.
-    Use to script 'print(ans.keys())' to get the details.
-    The most important variables all already been printed.
+    A dict containing all the matrix and variables involved.
+    Use the script 'print(ans.keys())' to get the details.
+    Specially, the P values and the interval it located will be
+    calculated using the scipy.stats packages.
+    The most important variables have already been printed.
 ```
 4. print_pks of module pkc.py.
 ```
@@ -132,7 +134,7 @@ Nothing will be returned.
 
 ## Examples
 
-The best way to use this package is using the Python scripts.
+The best way to use this package is to use Python scripts.
 
 ### 1. calculate PK
 
@@ -226,7 +228,7 @@ Then just get the value with the key of the dict!
 
 ## Contribute
 
-Please feel free to contact us(silencejiang@zju.edu.cn). Any kind of feedbacks is welcomed and appreciated.
+Please feel free to contact us (silencejiang@zju.edu.cn). Any kind of feedback is welcome and appreciated.
 - Check out the wiki for development info (coming soon!).
 - Fork us from @xfz329's [main](https://github.com/xfz329/pk4adi) and star us.
 - Report an issue or a bug with data [here](https://github.com/xfz329/pk4adi/issues).
@@ -236,4 +238,5 @@ Please feel free to contact us(silencejiang@zju.edu.cn). Any kind of feedbacks i
 1. [Measuring the Performance of Anesthetic Depth Indicators](https://pubs.asahq.org/anesthesiology/article/84/1/38/35261/Measuring-the-Performance-of-Anesthetic-Depth)
 2. [A measure of association for assessing prediction accuracy that is a generalization of non-parametric ROC area](https://onlinelibrary.wiley.com/doi/10.1002/(SICI)1097-0258(19960615)15:11%3C1199::AID-SIM218%3E3.0.CO;2-Y)
 3. [Excel 4.0 Macro Functions Reference - My Online Training Hub](https://d13ot9o61jdzpp.cloudfront.net/files/Excel%204.0%20Macro%20Functions%20Reference.pdf)
-
+4. [scipy.stats.norm](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html)
+5. [scipy.stats.t](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html)
