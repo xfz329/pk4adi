@@ -17,7 +17,7 @@ __all__  = ["compare_pks", "print_pks"]
 def compare_pks(pk1, pk2, auto_print = True):
     """
     Compare two answers of the pk values, which is the output of the function calculate_pk().
-        print_pks() will be called before return the ans by default.
+        print_pks() will be called before returning ans by default.
 
     Parameters
     ----------
@@ -26,14 +26,16 @@ def compare_pks(pk1, pk2, auto_print = True):
     pk2 : a dict.
         The output of the function calculate_pk().
     auto_print : bool.
-        Whether print the ans before returning the ans or not.
+        Whether to print the ans before returning it or not.
 
     Returns
     -------
     ans : a dict.
-        A dict containing all the matrix and variables involved in.
-        Use to script 'print(ans.keys())' to get the details.
-        The most important variables all already been printed.
+        A dict containing all the matrix and variables involved.
+        Use the script 'print(ans.keys())' to get the details.
+        Specially, the P values and the interal it located will
+        be calculated using the scipy.stats packages.
+        The most important variables have already been printed.
 
     References
     ----------
@@ -207,8 +209,24 @@ def T2P(target, df, verbose = False):
     """
 
     value = abs(target)
-    left = 0.99999
+    left = 0.5
     right = 0.00001
+
+    ex_left = t.ppf(1 - left, df)
+    ex_right = t.ppf(1 - right, df)
+
+    if value <= abs(ex_left) :
+        p = left
+        if verbose:
+            print("The p value for df at %3d and ppf at %.4f is %.5f (delta < 0.00001)." % (df, value, p))
+        return p, judgeP(p)
+
+    if value >= abs(ex_right) :
+        p = right
+        if verbose:
+            print("The p value for df at %3d and ppf at %.4f is %.5f (delta < 0.00001)." % (df, value, p))
+        return p, judgeP(p)
+
     current = 10000
     mid = None
     while abs(current - value) > 0.0001:
