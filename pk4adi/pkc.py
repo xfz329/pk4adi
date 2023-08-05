@@ -85,7 +85,7 @@ def compare_pks(pk1, pk2, auto_print = True):
     DF = n_case - 1
     PKDJ = n_case * PKD - DF / n_case * SumD
     SEDJ = math.sqrt( DF / n_case * ( SSD - 1 / n_case * SumD * SumD ))
-    TD = PKDJ / SEDJ
+    TD = float(PKDJ) / float(SEDJ)
     TP, TJ = T2P(TD, DF)
 
     # save the variables.

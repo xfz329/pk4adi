@@ -1,4 +1,8 @@
 # Change logs
+## 0.1.4
+Minor update.
+* Adjust the type of data from float64 to float in pkc.py to raise the 'ZeroDivisionError: float division by zero'.
+
 ## 0.1.3
 Minor update.
 * Fix bug.
